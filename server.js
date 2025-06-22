@@ -57,7 +57,14 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors());
+// ✅ Fix CORS
+const corsOptions = {
+  origin: 'https://avrcreations.vercel.app',
+  methods: ['POST'],
+  allowedHeaders: ['Content-Type'],
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 app.post('/api/send-email', async (req, res) => {
@@ -75,8 +82,8 @@ app.post('/api/send-email', async (req, res) => {
     const mailOptions = {
       from: email,
       to: process.env.EMAIL_USER,
-      subject: `New Contact Form: ${subject}`, // ✅ Use backticks
-      html: `                                  // ✅ Use backticks
+      subject: `New Contact Form: ${subject}`,
+      html: `
         <h3>New Message</h3>
         <p><strong>Name:</strong> ${name}</p>
         <p><strong>Email:</strong> ${email}</p>
@@ -94,6 +101,5 @@ app.post('/api/send-email', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`✅ Server running on http://localhost:${PORT}`); // ✅ Use backticks here too
+  console.log(`✅ Server running on http://localhost:${PORT}`);
 });
-
