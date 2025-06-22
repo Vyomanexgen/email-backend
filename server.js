@@ -48,33 +48,36 @@
 // });
 
 
+// server.js
+
 const express = require('express');
 const nodemailer = require('nodemailer');
 const dotenv = require('dotenv');
 const cors = require('cors');
 
 dotenv.config();
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ✅ Only allow Vercel domain
+// ✅ Setup correct CORS configuration
 const corsOptions = {
   origin: 'https://avrcreations.vercel.app',
   methods: ['POST'],
   allowedHeaders: ['Content-Type'],
-  credentials: true,
 };
 
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
+
 app.use(express.json());
 
-// ✅ Check deployment
+// ✅ Health check route
 app.get('/version', (req, res) => {
-  res.json({ message: 'Backend is running', deployedAt: new Date().toISOString() });
+  res.json({ message: 'Backend is working ✅', time: new Date().toISOString() });
 });
 
-// ✅ Send email
+// ✅ Contact form email handler
 app.post('/api/send-email', async (req, res) => {
   const { name, email, subject, message } = req.body;
 
@@ -101,13 +104,13 @@ app.post('/api/send-email', async (req, res) => {
     };
 
     await transporter.sendMail(mailOptions);
-    res.status(200).json({ success: true, message: 'Email sent successfully' });
+    res.status(200).json({ success: true, message: 'Email sent successfully ✅' });
   } catch (error) {
-    console.error('❌ Error sending email:', error);
+    console.error('Email sending failed ❌', error);
     res.status(500).json({ success: false, message: 'Failed to send email' });
   }
 });
 
 app.listen(PORT, () => {
-  console.log(`✅ Server running on port ${PORT}`);
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
