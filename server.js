@@ -57,7 +57,7 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ✅ Fix CORS
+// ✅ Proper CORS setup for your Vercel domain
 const corsOptions = {
   origin: 'https://avrcreations.vercel.app',
   methods: ['POST'],
@@ -66,6 +66,12 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.use(express.json());
+
+// ✅ Optional test route to check CORS from browser
+app.get('/test-cors', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', 'https://avrcreations.vercel.app');
+  res.json({ message: 'CORS is working fine!' });
+});
 
 app.post('/api/send-email', async (req, res) => {
   const { name, email, subject, message } = req.body;
@@ -95,7 +101,7 @@ app.post('/api/send-email', async (req, res) => {
     await transporter.sendMail(mailOptions);
     res.status(200).json({ success: true, message: 'Email sent successfully' });
   } catch (error) {
-    console.error('Error sending email:', error);
+    console.error('❌ Error sending email:', error);
     res.status(500).json({ success: false, message: 'Failed to send email' });
   }
 });
