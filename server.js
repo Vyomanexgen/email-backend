@@ -57,13 +57,23 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ✅ TEMPORARY: Allow CORS from all origins for testing
-app.use(cors());
+// ✅ CORS configuration for Vercel frontend
+const corsOptions = {
+  origin: 'https://avrcreations.vercel.app',
+  methods: ['POST'],
+  allowedHeaders: ['Content-Type'],
+  credentials: true,
+};
 
-// ✅ Parse JSON request bodies
+app.use(cors(corsOptions));
+
+// ✅ Handle preflight (OPTIONS) requests
+app.options('*', cors(corsOptions));
+
+// ✅ Parse JSON body
 app.use(express.json());
 
-// ✅ Route to confirm deployment version and timestamp
+// ✅ Version check route
 app.get('/version', (req, res) => {
   res.json({
     message: 'Backend is running',
@@ -107,5 +117,5 @@ app.post('/api/send-email', async (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`✅ Server running on http://localhost:${PORT}`);
-  console.log("🚀 Deployed version @", new Date().toISOString());
+  console.log("🚀 Deployed @", new Date().toISOString());
 });
