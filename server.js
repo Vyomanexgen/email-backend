@@ -1,3 +1,5 @@
+
+
 // const express = require('express');
 // const nodemailer = require('nodemailer');
 // const dotenv = require('dotenv');
@@ -25,13 +27,14 @@
 //     const mailOptions = {
 //       from: email,
 //       to: process.env.EMAIL_USER,
-//       subject: `New Contact Form: ${subject}`,
+//       subject: `Contact Form: ${subject}`,
 //       html: `
-//         <h3>New Message</h3>
-//         <p><strong>Name:</strong> ${name}</p>
-//         <p><strong>Email:</strong> ${email}</p>
-//         <p><strong>Subject:</strong> ${subject}</p>
-//         <p><strong>Message:</strong> ${message}</p>
+//       <h3>New Message</h3>
+//       <p><strong>Name:</strong> ${name}</p>
+//       <p><strong>Email:</strong> ${email}</p>
+//       <p><strong>Phone:</strong> ${req.body.phone || ''}</p>
+//       <p><strong>Subject:</strong> ${subject}</p>
+//       <p><strong>Message:</strong> ${message}</p>
 //       `,
 //     };
 
@@ -44,11 +47,9 @@
 // });
 
 // app.listen(PORT, () => {
-//   console.log(`✅ Server running on http://localhost:${PORT}`);
+//   console.log(`✅ Server running on http://localhost:${PORT}`); // ✅ Use backticks here too
 // });
 
-
-// server.js
 
 const express = require('express');
 const nodemailer = require('nodemailer');
@@ -56,30 +57,31 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 
 dotenv.config();
-
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ✅ Setup correct CORS configuration
+// ✅ Configure allowed origins (adjust with your actual Vercel frontend URL)
+const allowedOrigins = [
+  'http://localhost:3000', // for local dev
+  'https://avrcreations.vercel.app/' // replace with your deployed Vercel frontend URL
+];
+
 const corsOptions = {
-  origin: 'https://avrcreations.vercel.app',
-  methods: ['POST'],
-  allowedHeaders: ['Content-Type'],
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST'],
 };
 
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
-
 app.use(express.json());
 
-// ✅ Health check route
-app.get('/version', (req, res) => {
-  res.json({ message: 'Backend is working ✅', time: new Date().toISOString() });
-});
-
-// ✅ Contact form email handler
 app.post('/api/send-email', async (req, res) => {
-  const { name, email, subject, message } = req.body;
+  const { name, email, phone, subject, message } = req.body;
 
   try {
     const transporter = nodemailer.createTransport({
@@ -93,24 +95,25 @@ app.post('/api/send-email', async (req, res) => {
     const mailOptions = {
       from: email,
       to: process.env.EMAIL_USER,
-      subject: `New Contact Form: ${subject}`,
+      subject: `Contact Form: ${subject}`,
       html: `
-        <h3>New Message</h3>
+        <h3>New Contact Message</h3>
         <p><strong>Name:</strong> ${name}</p>
         <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Phone:</strong> ${phone}</p>
         <p><strong>Subject:</strong> ${subject}</p>
-        <p><strong>Message:</strong> ${message}</p>
+        <p><strong>Message:</strong><br/>${message}</p>
       `,
     };
 
     await transporter.sendMail(mailOptions);
-    res.status(200).json({ success: true, message: 'Email sent successfully ✅' });
+    res.status(200).json({ success: true, message: 'Email sent successfully' });
   } catch (error) {
-    console.error('Email sending failed ❌', error);
+    console.error('Error sending email:', error);
     res.status(500).json({ success: false, message: 'Failed to send email' });
   }
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`✅ Server running on http://localhost:${PORT}`);
 });
